@@ -74,6 +74,9 @@ def revoke_credentials():
     store  = get_storage(id)
     credentials = store.get()
 
+    if credentials == None:
+        return 'already revoked'
+    
     credentials.revoke(httplib2.Http())
 
     repo = Repo('./datas/')
