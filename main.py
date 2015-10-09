@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect
+from git import Repo
 import os
 import httplib2
 import oauth2client
@@ -42,11 +43,26 @@ def redirect_url():
     if error != None:
         return error
 
-      
+    id = request.args.get('state', None)
+    if id == None:
+        return 'No Id'
+
+    store  = get_storage(id)
+    flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
+                               scope=SCOPES,
+                               redirect_uri='http://ec2-54-64-113-34.ap-northeast-1.compute.amazonaws.com:9991/redirect_url')
+
+    auth_code = request.args.get('code',None)
+    credentials = flow.step2_exchange(auth_code)
+    store.put(credentials)    
+
+    repo = Repo('./datas/')
+    filepath = 'credentials/%s_credential.json' % id
+    repo.index.add([filepath])
+    repo.index.commit('add credentials - %s' % filepath)
+    push_info = repo.remotes.origin.push()
 
     return 'ok'
-
-
 
 @app.route('/revoke_credentials', methods =['GET'])
 def revoke_credentials():
@@ -59,6 +75,12 @@ def revoke_credentials():
     credentials = store.get()
 
     credentials.revoke(httplib2.Http())
+
+    repo = Repo('./datas/')
+    filepath = 'credentials/%s_credential.json' % id
+    repo.index.remove([filepath])
+    repo.index.commit('revoke credentials - %s' % filepath)
+    push_info = repo.remotes.origin.push()
 
     return 'revoked'
 
