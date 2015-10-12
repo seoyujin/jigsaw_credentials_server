@@ -1,16 +1,19 @@
 from flask import Flask, request, redirect
 from git import Repo
-import os
+import capacity_monitor
 import httplib2
 import oauth2client
-from oauth2client import client, file, tools
-from apiclient import discovery
+from oauth2client import client, file
+import credentials_reader
 
 SCOPES              = ['https://www.googleapis.com/auth/drive',
                        'https://www.googleapis.com/auth/drive.file',
+                       'https://www.googleapis.com/auth/drive.readonly',
                        'https://www.googleapis.com/auth/drive.appdata',
                        'https://www.googleapis.com/auth/drive.apps.readonly',
-                       'https://www.googleapis.com/auth/drive.metadata.readonly'
+                       'https://www.googleapis.com/auth/drive.metadata',
+                       'https://www.googleapis.com/auth/drive.metadata.readonly',
+                       'https://www.googleapis.com/auth/drive.photos.readonly'
                       ]
 
 CLIENT_SECRET_FILE  = 'client_secret.json'
@@ -25,7 +28,7 @@ def get_credentials():
     if id == None:
         id = 'anyone'
 
-    store  = get_storage(id)
+    store  = credentials_reader.get_storage(id)
     credentials = store.get()
 
     flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
@@ -47,7 +50,7 @@ def redirect_url():
     if id == None:
         return 'No Id'
 
-    store  = get_storage(id)
+    store  = credentials_reader.get_storage(id)
     flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                scope=SCOPES,
                                redirect_uri='http://ec2-54-64-113-34.ap-northeast-1.compute.amazonaws.com:9991/redirect_url')
@@ -71,7 +74,7 @@ def revoke_credentials():
     if id == None:
         id = 'anyone'
 
-    store  = get_storage(id)
+    store  = credentials_reader.get_storage(id) 
     credentials = store.get()
 
     if credentials == None:
@@ -87,14 +90,7 @@ def revoke_credentials():
 
     return 'revoked'
 
-def get_storage(id):
-
-    credential_dir= os.path.expanduser('./datas/credentials/')
-    file_name = id + '_credential.json'
-    credential_path = os.path.join(credential_dir, file_name)
-
-    return oauth2client.file.Storage(credential_path)
-
 if __name__ == '__main__':
+    capacity_monitor.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
