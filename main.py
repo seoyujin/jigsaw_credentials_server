@@ -21,15 +21,10 @@ APPLICATION_NAME    = 'CREDENTIAL_SERVER'
 
 app = Flask(__name__)
 
-@app.route('/get_credentials', methods = ['GET'])
-def get_credentials():
+@app.route('/donations', methods = ['POST'])
+def donations():
 
-    id = request.args.get('id', None)
-    if id == None:
-        id = 'anyone'
-
-    store  = credentials_reader.get_storage(id)
-    credentials = store.get()
+    id = request.form['id']
 
     flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                scope=SCOPES,
@@ -67,8 +62,8 @@ def redirect_url():
 
     return 'ok'
 
-@app.route('/revoke_credentials', methods =['GET'])
-def revoke_credentials():
+@app.route('/credentials', methods =['DELETE'])
+def credentials_delete():
 
     id = request.args.get('id', None)
     if id == None:
@@ -89,6 +84,14 @@ def revoke_credentials():
     push_info = repo.remotes.origin.push()
 
     return 'revoked'
+
+@app.route('/credentials', methods = ['GET'])
+def credentials():
+    
+    if len(capacity_monitor.qouta_sort_list) == 0:
+        return 'no credentials'
+    else:
+        return capacity_monitor.qouta_sort_list[0].get_file_name()
 
 if __name__ == '__main__':
     capacity_monitor.start_threading()
