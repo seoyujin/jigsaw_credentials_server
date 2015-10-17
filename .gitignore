@@ -2,4 +2,6 @@
 *.pyc
 nohup.out
 datas
-drevoke_credentialsatas/*
+test_client/.idea
+test_client/.cache
+test_client/__pycache__
