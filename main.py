@@ -86,7 +86,7 @@ def credentials_delete():
     return 'revoked'
 
 @app.route('/credentials', methods = ['GET'])
-def credentials():
+def credentials_get():
     
     if len(capacity_monitor.qouta_sort_list) == 0:
         return 'no credentials'
