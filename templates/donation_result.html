@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+
+<html>
+<body>
+
+<div align = "center" style="margin-top:120px">
+    <img src = "{{ url_for('static', filename = 'css/images/jigsawlogo.png') }}"
+         alt = "jigsaw" 
+         style = "width:350px; height:70px;" >
+    <div style = "margin-top:40px">
+         <span style = "font-size:17pt; font-weight:bold;">Hello </span><span style = "font-size:17pt; font-weight:bold; color:red">{{name|safe}}</span>
+         <h2>Success your donation.</h2>
+         <h2>Enjoy jigsaw service from now on! :) </h2>
+    </div>
+
+</div>
+
+</body>
+</html>
+

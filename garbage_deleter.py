@@ -3,6 +3,7 @@ import time
 import credentials_reader
 from apiclient import errors
 import os
+from git import Repo
 
 
 qouta_sort_list = list() 
@@ -36,7 +37,6 @@ class Credentilas_info:
 
     def get_used_quota(self):
         return self.used_quota
-
 
 def monitoring_capacity():
     global qouta_sort_list

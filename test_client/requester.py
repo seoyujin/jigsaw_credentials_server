@@ -1,10 +1,12 @@
 import webbrowser
 import requests
 
+SERVER_URL = 'http://1.234.65.53:9991'
+
 def donate_id(id):
 
     post_data = {'id':id}
-    r = requests.post("http://54.64.113.34:9991/donations", post_data)
+    r = requests.post("%s/donations" % SERVER_URL, post_data)
 
     url = r.url
 
@@ -22,10 +24,10 @@ def donate_id(id):
 def revoke_credentials(id):
 
     data = {'id':id}
-    r = requests.delete("http://54.64.113.34:9991/credentials", params=data)
+    r = requests.delete("%s/credentials" % SERVER_URL, params=data)
     print(r.text)
 
 def get_credentials():
 
-    r = requests.get("http://54.64.113.34:9991/credentials")
+    r = requests.get("%s/credentials" % SERVER_URL)
     print(r.text)

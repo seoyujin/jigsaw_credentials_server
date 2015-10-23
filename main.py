@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, render_template
 from git import Repo
 import capacity_monitor
 import httplib2
@@ -18,6 +18,7 @@ SCOPES              = ['https://www.googleapis.com/auth/drive',
 
 CLIENT_SECRET_FILE  = 'client_secret.json'
 APPLICATION_NAME    = 'CREDENTIAL_SERVER' 
+SERVER_URL          = 'http://silencenamu.cafe24.com:9991'
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def donations():
 
     flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                scope=SCOPES,
-                               redirect_uri='http://ec2-54-64-113-34.ap-northeast-1.compute.amazonaws.com:9991/redirect_url')
+                               redirect_uri='%s/redirect_url'% SERVER_URL)
     flow.params['state'] = id
 
     auth_uri = flow.step1_get_authorize_url()
@@ -48,7 +49,7 @@ def redirect_url():
     store  = credentials_reader.get_storage(id)
     flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                scope=SCOPES,
-                               redirect_uri='http://ec2-54-64-113-34.ap-northeast-1.compute.amazonaws.com:9991/redirect_url')
+                               redirect_uri='%s/redirect_url'% SERVER_URL)
 
     auth_code = request.args.get('code',None)
     credentials = flow.step2_exchange(auth_code)
@@ -60,7 +61,10 @@ def redirect_url():
     repo.index.commit('add credentials - %s' % filepath)
     push_info = repo.remotes.origin.push()
 
-    return 'ok'
+    service = credentials_reader.get_service(id)
+    about = service.about().get().execute()
+    
+    return render_template('donation_result.html', name=about['name'])
 
 @app.route('/credentials', methods =['DELETE'])
 def credentials_delete():
@@ -87,11 +91,19 @@ def credentials_delete():
 
 @app.route('/credentials', methods = ['GET'])
 def credentials_get():
-    
+   # return render_template('donation_result.html', name='hhelo')
+
     if len(capacity_monitor.qouta_sort_list) == 0:
         return 'no credentials'
     else:
-        return capacity_monitor.qouta_sort_list[0].get_file_name()
+        sorting_files = []
+
+        try:
+            for qouta in capacity_monitor.qouta_sort_list:
+                sorting_files.append(qouta.get_file_name()+'\n')
+        except Exception as e:
+            pass
+        return ''.join(sorting_files)
 
 if __name__ == '__main__':
     capacity_monitor.start_threading()
