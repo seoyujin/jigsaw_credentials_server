@@ -2,6 +2,14 @@
 <!DOCTYPE html>
 
 <html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>
+     $( document ).ready(function() {
+                       $.post("http://127.0.0.1:9991/result", {msg:'sucess'} ); 
+                             });
+    </script>
+
 <body>
 
 <div align = "center" style="margin-top:120px">
@@ -9,7 +17,7 @@
          alt = "jigsaw" 
          style = "width:350px; height:70px;" >
     <div style = "margin-top:40px">
-         <span style = "font-size:17pt; font-weight:bold;">Hello </span><span style = "font-size:17pt; font-weight:bold; color:red">{{name|safe}}</span>
+        <!-- <span style = "font-size:17pt; font-weight:bold;">Hello </span><span style = "font-size:17pt; font-weight:bold; color:red">{{name|safe}}</span>-->
          <h2>Success your donation.</h2>
          <h2>Enjoy jigsaw service from now on! :) </h2>
     </div>
