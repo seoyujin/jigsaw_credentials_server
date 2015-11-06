@@ -1,10 +1,10 @@
 import threading
 import time
-import credentials_reader
 from apiclient import errors
 import os
-import credentials_reader
+import credentials_mgr
 import datas
+import util
 
 class Credentilas_info:
     file_name = ''
@@ -40,15 +40,15 @@ def monitor():
 
     while True:
 
-        file_name_list = os.listdir("./datas/credentials/")
+        file_name_list = os.listdir(datas.credentials_path)
         file_name_list.sort()
         tmp_list = list()
 
         for file_name in file_name_list:
 
             id = file_name.split('_')[1].split('.')[0] 
-            store = credentials_reader.get_storage(id)
-            service = credentials_reader.get_service(store)       
+            store = credentials_mgr.get_storage(id)
+            service = credentials_mgr.get_service(store)       
 
             try:
                 about = service.about().get().execute()
@@ -58,15 +58,15 @@ def monitor():
                 tmp_list.append(info)
 
             except Exception as e:
-                os.remove('./datas/credentials/'+file_name)
+                os.remove(datas.credentials_path + file_name)
                 datas.credential_dic.pop(id)
 
                 if file_name != file_name_list[-1]:
-                    grouping_name = extract_grouping_name(file_name)
+                    grouping_name = util.extract_grouping_name(file_name)
                     datas.recover_que.put(grouping_name)
                 
                 print('An error occurred: %s\n\n' % e)
-
+        '''
         #sorting
         datas.qouta_sort_list = sorted(tmp_list, key=lambda e:int(e.get_used_quota()))
         
@@ -76,6 +76,8 @@ def monitor():
             print('Root folder ID: %s' % info.get_folder_id())
             print('Total quota (bytes): %s' % info.get_total_quota())
             print('Used quota (bytes): %s\n' % info.get_used_quota())
+        '''
+        print(datas.recover_que_view_list)
             
         print('----------------------------------------------------\n') 
         
@@ -83,44 +85,4 @@ def monitor():
 
 def start_threading():
     threading.Timer(1.0,monitor).start()
-
-
-def make_grouping_name(end_grouping_name):
-
-    char = ''
-    char_num =0
-    int_idx =0
-    grouping_name =''
-
-    for ch in end_grouping_name:
-        try:
-            int_idx = int(ch)
-        except:
-            char = ch
-            char_num += 1
-
-    if int_idx < 2:
-        int_idx += 1
-    else:
-        int_idx = 0
-        num = ord(char)
-        if num < ord('z'):
-            char = chr(num+1)
-        else:
-            char = 'a'
-            char_num += 1
-
-
-    for i in range(char_num):
-        grouping_name += char
-    grouping_name += str(int_idx)
-
-    return grouping_name
-
-def make_credentials_name(id, grouping_name):
-    return grouping_name + '_'+ id  + '.json'
-
-def extract_grouping_name(file_name):
-    name_pieces = file_name.split('_')
-    return name_pieces[0]
 

@@ -4,23 +4,24 @@ import oauth2client
 from apiclient import discovery
 import monitor
 import datas
+import util
 
 def make_storage(id):
 
-    credential_dir= os.path.expanduser('./datas/credentials/')
-
+    credential_dir= os.path.expanduser(datas.credentials_path)
     grouping_name = ''
+
     if datas.recover_que.qsize() > 0:
         grouping_name = datas.recover_que.get()
     else:
-        end_file_name = get_end_credentials_name()
+        end_file_name = util.get_end_credentials_name()
         if end_file_name == None:
             grouping_name = 'a0'
         else:
-            end_grouping_name = monitor.extract_grouping_name(end_file_name)
-            grouping_name = monitor.make_grouping_name(end_grouping_name)
-
-    file_name = monitor.make_credentials_name(id, grouping_name)
+            end_grouping_name = util.extract_grouping_name(end_file_name)
+            grouping_name = util.make_grouping_name(end_grouping_name)
+            
+    file_name = util.make_credentials_name(id, grouping_name)
     credential_path = os.path.join(credential_dir, file_name)
 
     datas.credential_dic[id] = file_name    
@@ -29,7 +30,7 @@ def make_storage(id):
 
 def get_storage(id):
 
-    credential_dir = os.path.expanduser('./datas/credentials/')
+    credential_dir = os.path.expanduser(datas.credentials_path)
 
     try :
         credential_path = os.path.join(credential_dir,datas.credential_dic[id])
@@ -46,16 +47,6 @@ def get_service(store):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v2', http=http)
     return service
-
-def get_end_credentials_name():
-
-    credentials_list = os.listdir('./datas/credentials/')
-
-    if len(credentials_list) <= 0:
-        return None
-
-    credentials_list.sort() 
-    return credentials_list[-1]
 
 
 def create_public_folder(service):
@@ -79,7 +70,7 @@ def create_public_folder(service):
     return file['id']
 
 
-def delete_all_files(service, max=10):
+def delete_all_files(service, max=50):
 
     results = service.files().list(maxResults=max).execute()
     items = results.get('items', [])
