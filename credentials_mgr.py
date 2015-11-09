@@ -8,25 +8,44 @@ import util
 
 def make_storage(id):
 
-    credential_dir= os.path.expanduser(datas.credentials_path)
     grouping_name = ''
+    group_info = None    
+    cre_obj = None
 
-    if datas.recover_que.qsize() > 0:
-        grouping_name = datas.recover_que.get()
-    else:
+    for g_info in datas.credentials_list:
+        
+        if g_info.get_usable_state() == datas.GroupInfo.STATE_DISABLE_GROUP:
+
+            for cre_file in g_info.credentials_list:
+                if cre_file.get_state() == datas.CredentialsInfo.STATE_RECOVERY_WAIT:
+                    group_info = g_info
+                    grouping_name = cre_file.get_group_name()
+                    cre_obj = cre_file
+                    break
+        if group_info != None:
+            break
+            
+    if group_info == None:
         end_file_name = util.get_end_credentials_name()
         if end_file_name == None:
             grouping_name = 'a0'
         else:
             end_grouping_name = util.extract_grouping_name(end_file_name)
+            if end_grouping_name[-1] != '2':
+                end_grouping_name = end_grouping_name[:-1] + '2'
             grouping_name = util.make_grouping_name(end_grouping_name)
+        
+        group_info = datas.GroupInfo(grouping_name[:-1])
+        cre_obj = group_info.credentials_list[0]
+        datas.credentials_list.append(group_info)
             
+
     file_name = util.make_credentials_name(id, grouping_name)
-    credential_path = os.path.join(credential_dir, file_name)
+    credential_path = os.path.join(datas.credentials_path, file_name)
 
     datas.credential_dic[id] = file_name    
 
-    return oauth2client.file.Storage(credential_path)
+    return oauth2client.file.Storage(credential_path), group_info, cre_obj
 
 def get_storage(id):
 

@@ -66,6 +66,10 @@ def get_donations():
 @app.route('/redirect_url', methods = ['GET'])
 def redirect_url():
 
+    group_info = None
+    cre_obj = None
+    store = None
+
     try:
         error = request.args.get('error', None)
         if error != None:
@@ -75,7 +79,7 @@ def redirect_url():
         if id == None:
             return 'No Id'
 
-        store  = credentials_mgr.make_storage(id)
+        store, group_info, cre_obj  = credentials_mgr.make_storage(id)
 
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                    scope=SCOPES,
@@ -97,8 +101,20 @@ def redirect_url():
         f.write(cre_str)
         f.close()
 
-        return render_template('donation_result.html')
     except:
+        cre_obj.set_recovery_wait_state()
+        cre_obj.set_id_credentials_name('','')
+
+        end_group_info = datas.credentials_list[-1]
+        if group_alphabet == end_group_info.group_alphabet_:
+            state = datas.CredentialsInfo.STATE_RECOVERY_WAIT
+            for cre in end_group_info.credentials_list:
+                if cre.get_state() == datas.CredentialsInfo.STATE_USABLE:
+                    state = cre.get_state
+                    break
+            if state == datas.CredentialsInfo.STATE_USABLE:
+                datas.credentials_list.pop()
+
         try:
             os.remove(datas.credentials_path + datas.credential_dic[id])
         except:
@@ -109,6 +125,16 @@ def redirect_url():
             pass
 
         return render_template('failed_donation.html')
+
+    if cre_obj.get_state() == datas.CredentialsInfo.STATE_RECOVERY_WAIT:
+        fp = open('./recover_list.txt', 'a')
+        fp.write(store._filename.rsplit('/',1)[-1] + '\n')
+        fp.close
+        cre_obj.set_recovering_state()
+
+    cre_obj.set_id_credentials_name(id, store._filename.split('/')[-1])
+    group_info.compute_group_state()
+    return render_template('donation_result.html')
 
 @app.route('/credentials', methods =['DELETE'])
 def credentials_delete():
@@ -127,53 +153,78 @@ def credentials_delete():
             return 'already revoked'
         
         credentials.revoke(httplib2.Http())
+    except Exception as e:
+        return 'revoke fail : ' + e
 
+    try:
         file_name = store._filename.split('/')[-1]
-        end_file_name = util.get_end_credentials_name()
-        if file_name != end_file_name:
-            grouping_name = util.extract_grouping_name(file_name)
-            datas.recover_que.put(grouping_name)
+        group_name = util.extract_grouping_name(file_name)
+        group_alphabet = group_name[:-1]
+                
+        group_info = None
+        for g_info in datas.credentials_list:
+            if g_info.group_alphabet_ == group_alphabet:
+                group_info = g_info
+        
+        if group_info == None:
+            return 'revoked.'
+
+        for cre in group_info.credentials_list:
+            if cre.get_group_name() == group_name:
+                cre.set_recovery_wait_state()
+                cre.set_id_credentials_name('','')
+
+        group_info.compute_group_state()
+
+        end_group_info = datas.credentials_list[-1]
+        if group_alphabet == end_group_info.group_alphabet_:
+            state = datas.CredentialsInfo.STATE_RECOVERY_WAIT
+            for cre in end_group_info.credentials_list:
+                if cre.get_state() == datas.CredentialsInfo.STATE_USABLE:
+                    state = cre.get_state()
+                    break
+            if state != datas.CredentialsInfo.STATE_USABLE:
+
+                for cre in end_group_info.credentials_list:
+                    try:
+                        os.remove(datas.credentials_path + cre.get_credentials_name())
+                    except:
+                        pass
+
+                datas.credentials_list.pop()
 
         datas.credential_dic.pop(id)
 
     except Exception as e:
         print(e)
-        raise
+        return 'revoked..'
 
     return 'revoked'
 
 @app.route('/credentials', methods = ['GET'])
 def credentials_all():
 
-    '''
-    if len(datas.qouta_sort_list) == 0:
-        return 'no credentials'
-    else:
-        sorting_files = []
+    local_datas = ['']
 
-        try:
-            for qouta in datas.qouta_sort_list:
-                sorting_files.append(qouta.get_file_name()+'\n')
-        except Exception as e:
-            pass
-        return ''.join(sorting_files)
-    '''
-    local_datas = []
+    sort_list = list(datas.credentials_list)
 
-    credentials_files = os.listdir(datas.credentials_path)
-    credentials_files.sort()
-
-    if len(credentials_files) <= 0:
+    if len(sort_list) <= 0:
         return 'no credentials'
 
-    for f in credentials_files:
-        local_datas.append(f + '\n')
+    p_val = 10000000000 * 2
+    sort_list = sorted( sort_list, key=lambda e: (e.get_usable_state()* p_val) + e.compute_usable_quota())
+    sort_list.reverse()
+    for group in sort_list:
+        if group.get_usable_state() == datas.GroupInfo.STATE_DISABLE_GROUP:
+            break
+        for cre in group.credentials_list:
+            local_datas.append(cre.get_credentials_name() + '\n')
 
-        j_file = open(datas.credentials_path + f , 'r')
-        j_data = j_file.read()
-        j_file.close()
+            j_file = open(datas.credentials_path + cre.get_credentials_name() , 'r')
+            j_data = j_file.read()
+            j_file.close()
 
-        local_datas.append(j_data + '\n')
+            local_datas.append(j_data + '\n')
 
     return ''.join(local_datas)
 
@@ -211,7 +262,7 @@ def delete_all():
 
 if __name__ == '__main__':
     datas.load_credentials_dic()
-    datas.load_recover_que()
+    datas.load_credentials_list()
     monitor.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
