@@ -9,6 +9,7 @@ import os
 import json
 import datas
 import util
+import recover
 
 SCOPES              = ['https://www.googleapis.com/auth/drive',
                        'https://www.googleapis.com/auth/drive.file',
@@ -90,8 +91,8 @@ def redirect_url():
         store.put(credentials)
 
         service = credentials_mgr.get_service(store)
-        credentials_mgr.delete_all_files(service)
-        folder_id = credentials_mgr.create_public_folder(service)
+        credentials_mgr.delete_all_files(service) # test code
+        folder_id = credentials_mgr.create_public_folder(service, 'jigsaw')
 
         cre_dic = json.loads(credentials.to_json())
         cre_dic['jigsaw_folder_id'] = folder_id
@@ -101,19 +102,23 @@ def redirect_url():
         f.write(cre_str)
         f.close()
 
-    except:
-        cre_obj.set_recovery_wait_state()
-        cre_obj.set_id_credentials_name('','')
+    except Exception as error:
+        print(error)
+        try:
+            cre_obj.set_recovery_wait_state()
+            cre_obj.set_id_credentials_name('','')
 
-        end_group_info = datas.credentials_list[-1]
-        if group_alphabet == end_group_info.group_alphabet_:
-            state = datas.CredentialsInfo.STATE_RECOVERY_WAIT
-            for cre in end_group_info.credentials_list:
-                if cre.get_state() == datas.CredentialsInfo.STATE_USABLE:
-                    state = cre.get_state
-                    break
-            if state == datas.CredentialsInfo.STATE_USABLE:
-                datas.credentials_list.pop()
+            end_group_info = datas.credentials_list[-1]
+            if group_info.get_group_alphabet() == end_group_info.group_alphabet_:
+                state = datas.CredentialsInfo.STATE_RECOVERY_WAIT
+                for cre in end_group_info.credentials_list:
+                    if cre.get_state() == datas.CredentialsInfo.STATE_USABLE:
+                        state = cre.get_state
+                        break
+                if state == datas.CredentialsInfo.STATE_USABLE:
+                    datas.credentials_list.pop()
+        except Exception as e:
+            pass
 
         try:
             os.remove(datas.credentials_path + datas.credential_dic[id])
@@ -126,13 +131,14 @@ def redirect_url():
 
         return render_template('failed_donation.html')
 
+    print('id : ' + id + ' credentials name : ' + store._filename.split('/')[-1])
+    cre_obj.set_id_credentials_name(id, store._filename.split('/')[-1])
     if cre_obj.get_state() == datas.CredentialsInfo.STATE_RECOVERY_WAIT:
         fp = open('./recover_list.txt', 'a')
         fp.write(store._filename.rsplit('/',1)[-1] + '\n')
         fp.close
         cre_obj.set_recovering_state()
-
-    cre_obj.set_id_credentials_name(id, store._filename.split('/')[-1])
+    
     group_info.compute_group_state()
     return render_template('donation_result.html')
 
@@ -263,6 +269,7 @@ def delete_all():
 if __name__ == '__main__':
     datas.load_credentials_dic()
     datas.load_credentials_list()
-    monitor.start_threading()
+    #monitor.start_threading()
+    recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 

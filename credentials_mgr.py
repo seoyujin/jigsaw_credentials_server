@@ -1,10 +1,12 @@
 import os
 import httplib2
 import oauth2client
-from apiclient import discovery
+from apiclient import discovery, http, errors
 import monitor
 import datas
 import util
+from apiclient.http import MediaFileUpload
+import os
 
 def make_storage(id):
 
@@ -68,12 +70,65 @@ def get_service(store):
     return service
 
 
-def create_public_folder(service):
+def retrieve_all_files(service):
+
+    result = []
+    page_token = None
+    while True:
+        try:
+          param = {}
+          if page_token:
+            param['pageToken'] = page_token
+
+          files = service.files().list(orderBy = 'folder,title', **param).execute()
+
+          result.extend(files['items'])
+          page_token = files.get('nextPageToken')
+          if not page_token:
+            break
+        except Exception as error:
+          print('An error occurred: %s' % error)
+          break
+    return result
+
+
+
+def upload_file(service, folder_id, title,  mime_type, filename):
+
+
+  media_body = MediaFileUpload(filename, mimetype=mime_type, resumable=True)
+  body = {
+    'title': title,
+    'description': '',
+    'mimeType': mime_type,
+    "parents": [{
+        "kind": "drive#fileLink",
+        "id": folder_id
+    }]
+  }
+
+  try:
+    file = service.files().insert( body=body,media_body=media_body).execute()
+    print('Upload Complete')
+    return file
+  except Exception as e:
+    print(e)
+    return None
+
+
+
+def create_public_folder(service, folder_name, parent_id= None):
 
     body = {
-    'title': 'jigsaw',
+    'title': folder_name,
     'mimeType': 'application/vnd.google-apps.folder'
     }
+
+    # Set the parent folder.
+    if parent_id:
+        body['parents'] = [{
+            "kind": "drive#fileLink",
+            'id': parent_id }]
 
     file = service.files().insert(body=body).execute()
 
@@ -83,23 +138,60 @@ def create_public_folder(service):
     'role': 'reader'
     }
 
-    service.permissions().insert(
-      fileId=file['id'], body=permission).execute()
+    service.permissions().insert(fileId=file['id'], body=permission).execute()
 
-    return file['id']
+    return file
 
 
-def delete_all_files(service, max=50):
+def get_children_folder(all_files, parent_folder_id):
 
-    results = service.files().list(maxResults=max).execute()
-    items = results.get('items', [])
+    ch_folder_dic = {}
 
-    if not items:
-        print('No files found.')
-    else:
-        print('Files:')
-        for item in items:
-            try:
-                service.files().delete(fileId=item['id']).execute()
-            except Exception as error:
-                print(error)
+    for file in all_files:
+
+        if file['mimeType'] != 'application/vnd.google-apps.folder':
+            break
+
+        if file['parents'][0]['id'] == parent_folder_id:
+            ch_folder_dic[file['id']] = file['title']
+
+    return ch_folder_dic
+
+
+def download_file(service, file_id, file_path_name):
+
+    file = open(file_path_name, 'wb')
+    request = service.files().get_media(fileId=file_id)
+    media_request = http.MediaIoBaseDownload(file, request)
+
+    while True:
+        try:
+          download_progress, done = media_request.next_chunk()
+        except errors.HttpError as error:
+          print('An error occurred: %s' % error)
+          file.close
+          os.remove(file_path_name)
+          return
+
+
+        if download_progress:
+          print('Download Progress: %d%%' % int(download_progress.progress() * 100))
+        if done:
+          print('Download Complete')
+          file.close
+          return
+
+    file.close
+
+
+
+def delete_all_files(service):
+
+    files = retrieve_all_files(service)
+
+    try:
+        for f in files:
+            service.files().delete(fileId=f['id']).execute()
+    except Exception as e:
+        print(e)
+

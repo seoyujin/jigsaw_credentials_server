@@ -73,6 +73,7 @@ class CredentialsInfo:
             try:
                 os.remove(credentials_path + self.get_credentials_name())
                 self.set_id_credentials_name('','')
+                self.set_recovery_wait_state()
             except Exception as er:
                 print(er)
                 pass
@@ -89,6 +90,9 @@ class GroupInfo:
         self.group_alphabet_ = group_alphabet
         self.usable_quota_ = 0
         self.credentials_list =[ CredentialsInfo(group_alphabet + '0'), CredentialsInfo(group_alphabet + '1'), CredentialsInfo(group_alphabet + '2')]
+
+    def get_group_alphabet(self):
+        return self.group_alphabet_
 
     def get_usable_state(self):
         return self.usable_state_ 
