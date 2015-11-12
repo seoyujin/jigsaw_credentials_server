@@ -91,11 +91,11 @@ def redirect_url():
         store.put(credentials)
 
         service = credentials_mgr.get_service(store)
-        credentials_mgr.delete_all_files(service) # test code
-        folder_id = credentials_mgr.create_public_folder(service, 'jigsaw')
+        #credentials_mgr.delete_all_files(service) # test code
+        folder = credentials_mgr.create_public_folder(service, 'jigsaw')
 
         cre_dic = json.loads(credentials.to_json())
-        cre_dic['jigsaw_folder_id'] = folder_id
+        cre_dic['jigsaw_folder_id'] = folder['id']
         cre_str = json.dumps(cre_dic)
 
         f = open(datas.credentials_path + '%s' % datas.credential_dic[id],'w') 
