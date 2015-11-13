@@ -3,6 +3,7 @@
 nohup.out
 datas
 recover_files
+client_secret.json
 test_client/.idea
 test_client/.cache
 test_client/__pycache__
