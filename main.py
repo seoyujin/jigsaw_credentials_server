@@ -334,8 +334,8 @@ def check_active_server():
         # STAND-BY-SERVER
         while True:
             try:
-                requests.get(active_server_url + '/alive')
-                print('11111')
+                r = requests.get(active_server_url + '/alive')
+                print(r.text)
             except:
                 if wait_count >= 5:
                     git_manager.pull()
