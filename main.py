@@ -327,14 +327,15 @@ def check_active_server():
     print(SERVER_URL)
 
     r = requests.get("https://seoyujin.github.io/")
-    print(r.text)
     active_server_url = r.text
+    print(active_server_url)
     wait_count = 0
     if active_server_url != SERVER_URL:
         # STAND-BY-SERVER
         while True:
             try:
-                r = requests.get(active_server_url + '/alive')
+                active_server_url = active_server_url.strip() + '/alive'
+                r = requests.get(active_server_url)
                 print(r.text)
             except:
                 if wait_count >= 5:
@@ -358,7 +359,7 @@ if __name__ == '__main__':
     # ACTIVE-SERVER
     datas.load_credentials_dic()
     datas.load_credentials_list()
-    #monitor.start_threading()
+    monitor.start_threading()
     #recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
