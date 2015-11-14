@@ -44,7 +44,7 @@ def donations():
 
             flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                        scope=SCOPES,
-                                       redirect_uri='%s/redirect_url'% SERVER_URL)
+                                       redirect_uri='%s/redirect_url'% SERVER_URL.strip())
             flow.params['access_type'] = 'offline'
             flow.params['approval_prompt'] = 'force'
             flow.params['state'] = id
@@ -87,7 +87,7 @@ def redirect_url():
 
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                    scope=SCOPES,
-                                   redirect_uri='%s/redirect_url'% SERVER_URL)
+                                   redirect_uri='%s/redirect_url'% SERVER_URL.strip())
         auth_code = request.args.get('code',None)
         credentials = flow.step2_exchange(auth_code)
 
@@ -330,6 +330,7 @@ def check_active_server():
     active_server_url = r.text
     ping_url = active_server_url.strip() + '/alive'
     print(active_server_url)
+    '''
 
     wait_count = 0
     if active_server_url != SERVER_URL:
@@ -351,6 +352,7 @@ def check_active_server():
                 print(str(wait_count))
             
             time.sleep(60)
+    '''
 
 
 if __name__ == '__main__':
@@ -360,7 +362,7 @@ if __name__ == '__main__':
     # ACTIVE-SERVER
     datas.load_credentials_dic()
     datas.load_credentials_list()
-    monitor.start_threading()
+    #monitor.start_threading()
     #recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
