@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect, render_template
+import requests
 import monitor
 import httplib2
 import oauth2client
@@ -10,6 +11,8 @@ import json
 import datas
 import util
 import recover
+import git_manager
+import time
 
 SCOPES              = ['https://www.googleapis.com/auth/drive',
                        'https://www.googleapis.com/auth/drive.file',
@@ -23,7 +26,7 @@ SCOPES              = ['https://www.googleapis.com/auth/drive',
 
 CLIENT_SECRET_FILE  = 'client_secret.json'
 APPLICATION_NAME    = 'CREDENTIAL_SERVER' 
-SERVER_URL          = 'http://silencenamu.cafe24.com:9991'
+SERVER_URL          =  ''#'http://silencenamu.cafe24.com:9991'
 
 app = Flask(__name__)
 
@@ -246,6 +249,16 @@ def credentials_id():
     except Exception as e:
         return e
 
+@app.route('/group/<user_id>', methods = ['GET'])
+def get_group_name(user_id):
+
+    for group_info in datas.credentials_list:
+        for cre_info in group_info.credentials_list:
+            if cre_info.get_user_id() == user_id:
+                return group_info.get_group_alphabet()
+
+    return 'no user_id' 
+
 
 @app.route('/delete_all', methods = ['GET'])
 def delete_all():
@@ -266,10 +279,86 @@ def delete_all():
 
     return 'del all'
 
+@app.route('/log', methods = ['POST'])
+def write_log():
+
+    log_msg = request.form['log']
+
+    f = open('log.txt', 'a')
+    f.write(log_msg + '\n')
+    f.close()
+
+    datas.log_list.append(log_msg)
+    return 'success logging'
+
+@app.route('/log', methods = ['GET'])
+def read_log():
+
+    start = 0
+    try:
+        start = int(request.args.get('start'))
+    except:
+        pass
+
+    next_start = start
+    request_log = ''
+    try:
+        for log in datas.log_list[start:]:
+            next_start += 1
+            request_log = request_log + log + '\n'
+
+        return request_log + str(next_start)
+    except:
+        return 'out of range index'
+
+@app.route('/alive', methods = ['GET'])
+def is_alive():
+    return 'still alive...'
+
+def check_active_server():
+
+    global SERVER_URL
+
+    f = open('./server_url.txt','r')
+    url = f.read()
+    f.close()
+    
+    SERVER_URL = url
+    print(SERVER_URL)
+
+    r = requests.get("https://seoyujin.github.io/")
+    print(r.text)
+    active_server_url = r.text
+    wait_count = 0
+    if active_server_url != SERVER_URL:
+        # STAND-BY-SERVER
+        while True:
+            try:
+                requests.get(active_server_url + '/alive')
+                print('11111')
+            except:
+                if wait_count >= 5:
+                    git_manager.pull()
+                    f = open('./datas/server_url/index.html', 'w')
+                    f.write(SERVER_URL)
+                    f.close()
+                    git_manager.add()
+                    print('git push')
+                    break;
+                wait_count += 1
+                print(str(wait_count))
+            
+            time.sleep(60)
+
+
 if __name__ == '__main__':
+
+    check_active_server()
+
+    # ACTIVE-SERVER
     datas.load_credentials_dic()
     datas.load_credentials_list()
     #monitor.start_threading()
-    recover.start_threading()
+    #recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 

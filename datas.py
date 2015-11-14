@@ -5,6 +5,7 @@ import credentials_mgr
 
 credential_dic ={}
 credentials_list = []
+log_list = []
 
 credentials_path = './datas/credentials/'
 
@@ -202,4 +203,13 @@ def name_next_group_alphabet(cur_gr_name):
         return '%s%d' % (alphabet_part, no_part+1)
     else:
         return '%s%s0' % (alphabet_part, alphabet_part[0])
+
+
+def load_log_list():
+    global log_list
+
+    with open('./log.txt') as f:
+        for line in f:
+            log_list.append(line)
+
 

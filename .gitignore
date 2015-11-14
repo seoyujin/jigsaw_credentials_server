@@ -7,3 +7,5 @@ client_secret.json
 test_client/.idea
 test_client/.cache
 test_client/__pycache__
+server_url.txt
+log.txt
