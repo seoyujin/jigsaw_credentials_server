@@ -330,7 +330,6 @@ def check_active_server():
     active_server_url = r.text
     ping_url = active_server_url.strip() + '/alive'
     print(active_server_url)
-    '''
 
     wait_count = 0
     if active_server_url != SERVER_URL:
@@ -352,7 +351,6 @@ def check_active_server():
                 print(str(wait_count))
             
             time.sleep(60)
-    '''
 
 
 if __name__ == '__main__':
