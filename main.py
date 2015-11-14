@@ -328,14 +328,15 @@ def check_active_server():
 
     r = requests.get("https://seoyujin.github.io/")
     active_server_url = r.text
+    ping_url = active_server_url.strip() + '/alive'
     print(active_server_url)
+
     wait_count = 0
     if active_server_url != SERVER_URL:
         # STAND-BY-SERVER
         while True:
             try:
-                active_server_url = active_server_url.strip() + '/alive'
-                r = requests.get(active_server_url)
+                r = requests.get(ping_url)
                 print(r.text)
             except:
                 if wait_count >= 5:
