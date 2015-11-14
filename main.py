@@ -362,7 +362,7 @@ if __name__ == '__main__':
     # ACTIVE-SERVER
     datas.load_credentials_dic()
     datas.load_credentials_list()
-    #monitor.start_threading()
+    monitor.start_threading()
     #recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
