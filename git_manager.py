@@ -14,7 +14,6 @@ def pull():
 def remove(file_name):
 
     fname = file_name.split('/')[-1]
-
     repo = Repo('./datas/')
     filepath = 'credentials/' + fname
     repo.index.remove([filepath])
