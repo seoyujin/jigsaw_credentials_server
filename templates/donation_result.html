@@ -4,11 +4,6 @@
 <html>
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script>
-     $( document ).ready(function() {
-                       $.post("http://127.0.0.1:9991/result", {msg:'sucess'} ); 
-                             });
-    </script>
 
 <body>
 
@@ -18,9 +13,34 @@
          style = "width:350px; height:70px;" >
     <div style = "margin-top:40px">
         <!-- <span style = "font-size:17pt; font-weight:bold;">Hello </span><span style = "font-size:17pt; font-weight:bold; color:red">{{name|safe}}</span>-->
-         <h2>Success your donation.</h2>
-         <h2>Enjoy jigsaw service from now on! :) </h2>
+
+        <h2 id="notice" style = "font-size:14pt">저희 Jigsaw Puzzle은 대용량도 업로드 다운로드 가능한 서비스 입니다. <br><br>
+
+            저희는 이미 업로드된 자료들이 어떤 자료가 공유되고 있는지 파악할 수 없습니다.<br>
+            다만 불법적인 자료가 공유 되는 정보를 알게 된다면 donation 받은 계정을 정지할 수 있습니다.<br><br>
+
+            저희 서비스를 통해 저작권법 위반 행위가 일어나지 않도록 유의하여 주시기 바랍니다. <br><br>
+
+            Jigsaw Puzzle 개발팀 드림.</h2>
+
+        <button id="btn"
+            style = "margin-top:50px; width:100px; height:50px: font-size:14pt" 
+            onclick = "agree()">동의</button>
+
+         <h2 id="result1" style="display:none">Success your donation.</h2>
+         <h2 id="result2" style="display:none">Enjoy jigsaw service from now on! :) </h2>
     </div>
+
+    <script>
+    function agree(){
+
+        document.getElementById("notice").style.display ="none";
+        document.getElementById("btn").style.display ="none";
+        document.getElementById("result1").style.display ="block";
+        document.getElementById("result2").style.display ="block";
+
+    }
+    </script>
 
 </div>
 

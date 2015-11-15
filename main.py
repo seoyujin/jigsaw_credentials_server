@@ -26,7 +26,7 @@ SCOPES              = ['https://www.googleapis.com/auth/drive',
 
 CLIENT_SECRET_FILE  = 'client_secret.json'
 APPLICATION_NAME    = 'CREDENTIAL_SERVER' 
-SERVER_URL          =  ''#'http://silencenamu.cafe24.com:9991'
+SERVER_URL          =  ''
 
 app = Flask(__name__)
 
@@ -65,7 +65,6 @@ def get_donations():
         return render_template('failed_donation.html')
     else:
         return render_template('already_donation.html')
-
 
 @app.route('/redirect_url', methods = ['GET'])
 def redirect_url():
