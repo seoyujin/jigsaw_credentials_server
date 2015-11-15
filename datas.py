@@ -160,15 +160,20 @@ def load_credentials_list():
             max_count = name_count 
         group_dic[group_name] = cre
 
+    rec_list = []
+    with open('./recover_list.txt') as f:
+        for line in f:
+            rec_list.append(line.strip())
+
     group_alphabet = 'a'
     while True:
-        recover_group(group_alphabet, max_count, group_dic)
+        recover_group(group_alphabet, max_count, group_dic, rec_list)
         if group_alphabet == last_group_name[0]:
             break
         group_alphabet = chr(ord(group_alphabet)+1)
 
 
-def recover_group(group_alphabet, max_count, group_dic):
+def recover_group(group_alphabet, max_count, group_dic, recover_list):
 
     global credentials_list
 
@@ -187,6 +192,9 @@ def recover_group(group_alphabet, max_count, group_dic):
                 cre_info.set_usable_state()
                 id = group_dic[cur_group_name].split('_')[1].split('.')[0]
                 cre_info.set_id_credentials_name(id, group_dic[cur_group_name])
+                if cre_info.get_credentials_name() in recover_list:
+                    cre_info.set_recovering_state()
+
             cur_group_name = name_next_group_alphabet(cur_group_name)
         group_info.compute_group_state()
 

@@ -5,6 +5,7 @@ import os
 import credentials_mgr
 import datas
 import util
+import git_manager
 
 
 def recover():
@@ -96,6 +97,9 @@ def recover():
             f.write('')
             for str in lines:
                 f.write(str)
+
+        git_manager.recover_add()
+
 
 
 def start_threading():

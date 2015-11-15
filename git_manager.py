@@ -20,6 +20,19 @@ def remove(file_name):
     repo.index.commit('revoke credentials - %s' % filepath)
     push_info = repo.remotes.origin.push()
 
+def recover_add():
+
+    repo = Repo('./')
+    repo.index.add(['recover_list.txt'])
+    repo.index.commit('recover file change...')
+    push_info = repo.remotes.origin.push()
+
+def recover_pull():
+
+    repo = Repo('./')
+    push_info = repo.remotes.origin.pull()
+
+
 
 if __name__ == '__main__':
     add()

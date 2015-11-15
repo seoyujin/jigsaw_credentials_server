@@ -141,6 +141,7 @@ def redirect_url():
         fp.write(store._filename.rsplit('/',1)[-1] + '\n')
         fp.close
         cre_obj.set_recovering_state()
+        git_manager.recover_add()
     
     group_info.compute_group_state()
     return render_template('donation_result.html')
@@ -249,6 +250,16 @@ def credentials_id():
     except Exception as e:
         return e
 
+@app.route('/all_credentials',methods = ['GET'])
+def all_credentials():
+
+    local_datas =['']
+    cre_list = os.listdir(datas.credentials_path)
+    for cre in cre_list:
+        local_datas.append(cre + '\n')
+
+    return ''.join(local_datas)
+
 @app.route('/group/<user_id>', methods = ['GET'])
 def get_group_name(user_id):
 
@@ -323,12 +334,12 @@ def check_active_server():
     url = f.read()
     f.close()
     
-    SERVER_URL = url
+    SERVER_URL = url.strip()
     print(SERVER_URL)
 
     r = requests.get("https://seoyujin.github.io/")
-    active_server_url = r.text
-    ping_url = active_server_url.strip() + '/alive'
+    active_server_url = r.text.strip()
+    ping_url = active_server_url + '/alive'
     print(active_server_url)
 
     wait_count = 0
@@ -338,6 +349,38 @@ def check_active_server():
             try:
                 r = requests.get(ping_url)
                 print(r.text)
+                r = requests.get(active_server_url + '/all_credentials')
+                act_cre_name_list = r.text.split('\n')
+                stnd_cre_name_list = os.listdir(datas.credentials_path)
+
+                act_gr_name_dic = {}
+                for act in act_cre_name_list:
+                    act_gr_name_dic[act.split('_')[0]] = act
+
+                for st in stnd_cre_name_list:
+                    st_gr_name = st.split('_')[0]
+                    if st_gr_name not in act_gr_name_dic:
+                        os.remove(datas.credentials_path + st)
+                    else:
+                        act = act_gr_name_dic[st_gr_name]
+                        if st != act:
+                            os.remove(datas.credentials_path + st)
+                            id = act.split('_')[1].split('.')[0]
+                            id_data ={'id':id}
+                            r = requests.post(active_server_url + '/credentials', id_data)
+                            f = open(datas.credentials_path + act, 'r')
+                            f.write(r.text)
+                            f.close()
+
+                stnd_cre_name_list = os.listdir(datas.credentials_path)
+                for act in act_cre_name_list:
+                    if act not in stnd_cre_name_list:
+                        id = act.split('_')[1].split('.')[0]
+                        id_data ={'id':id}
+                        r = requests.post(active_server_url + '/credentials', id_data)
+                        f = open(datas.credentials_path + act, 'r')
+                        f.write(r.text)
+                        f.close()
             except:
                 if wait_count >= 5:
                     git_manager.pull()
@@ -346,6 +389,7 @@ def check_active_server():
                     f.close()
                     git_manager.add()
                     print('git push')
+                    git_manager.recover_pull()
                     break;
                 wait_count += 1
                 print(str(wait_count))
@@ -360,6 +404,7 @@ if __name__ == '__main__':
     # ACTIVE-SERVER
     datas.load_credentials_dic()
     datas.load_credentials_list()
+    datas.load_log_list()
     monitor.start_threading()
     #recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
