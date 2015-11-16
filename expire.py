@@ -16,7 +16,9 @@ def convert_date(date_str):
         
 def expire():
 
-    expired_date = date.today() + timedelta(days = -2)
+    #expired_date = date.today()
+    expired_date = date.today() + timedelta(days = +7 )
+    
 
     os_path = '/home/yujin/jigsaw_credentials_server/'
     cre_path = os_path + 'datas/credentials/' 
