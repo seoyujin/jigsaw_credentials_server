@@ -410,6 +410,6 @@ if __name__ == '__main__':
     datas.load_credentials_list()
     datas.load_log_list()
     monitor.start_threading()
-    #recover.start_threading()
+    recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
