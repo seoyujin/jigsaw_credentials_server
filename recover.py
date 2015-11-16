@@ -18,7 +18,6 @@ def recover():
         with open('./recover_list.txt', 'r') as f:
             lines = f.readlines()
 
-        print('recover not yet...')
         if len(lines) <= 0:
             continue
 
