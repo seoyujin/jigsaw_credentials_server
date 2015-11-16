@@ -32,7 +32,3 @@ def recover_pull():
     repo = Repo('./')
     push_info = repo.remotes.origin.pull()
 
-
-
-if __name__ == '__main__':
-    add()
