@@ -126,7 +126,6 @@ class GroupInfo:
 
         except Exception as e:
             print(e)
-            #print(self.group_alphabet_ + ' : ' + e)
             return 0
 
 
