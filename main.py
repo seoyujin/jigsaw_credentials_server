@@ -381,7 +381,7 @@ def check_active_server():
                         f.write(r.text)
                         f.close()
             except:
-                if wait_count >= 5:
+                if wait_count >= 0:
                     git_manager.pull()
                     f = open('./datas/server_url/index.html', 'w')
                     f.write(SERVER_URL)
