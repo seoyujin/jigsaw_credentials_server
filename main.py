@@ -350,6 +350,7 @@ def check_active_server():
                 print(r.text)
                 r = requests.get(active_server_url + '/all_credentials')
                 act_cre_name_list = r.text.split('\n')
+                act_cre_name_list.pop()
                 stnd_cre_name_list = os.listdir(datas.credentials_path)
 
                 act_gr_name_dic = {}
@@ -367,20 +368,22 @@ def check_active_server():
                             id = act.split('_')[1].split('.')[0]
                             id_data ={'id':id}
                             r = requests.post(active_server_url + '/credentials', id_data)
-                            f = open(datas.credentials_path + act, 'r')
+                            f = open(datas.credentials_path + act, 'w')
                             f.write(r.text)
                             f.close()
 
                 stnd_cre_name_list = os.listdir(datas.credentials_path)
                 for act in act_cre_name_list:
+                    print('act_credentials : ' + act)
                     if act not in stnd_cre_name_list:
                         id = act.split('_')[1].split('.')[0]
                         id_data ={'id':id}
                         r = requests.post(active_server_url + '/credentials', id_data)
-                        f = open(datas.credentials_path + act, 'r')
+                        f = open(datas.credentials_path + act, 'w')
                         f.write(r.text)
                         f.close()
-            except:
+            except Exception as e:
+                print(e)
                 if wait_count >= 0:
                     git_manager.pull()
                     f = open('./datas/server_url/index.html', 'w')
