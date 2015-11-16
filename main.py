@@ -138,7 +138,7 @@ def redirect_url():
     if cre_obj.get_state() == datas.CredentialsInfo.STATE_RECOVERY_WAIT:
         fp = open('./recover_list.txt', 'a')
         fp.write(store._filename.rsplit('/',1)[-1] + '\n')
-        fp.close
+        fp.close()
         cre_obj.set_recovering_state()
         git_manager.recover_add()
     
@@ -348,7 +348,10 @@ def check_active_server():
             try:
                 r = requests.get(ping_url)
                 print(r.text)
+                git_manager.recover_pull()
+
                 r = requests.get(active_server_url + '/all_credentials')
+
                 act_cre_name_list = r.text.split('\n')
                 act_cre_name_list.pop()
                 stnd_cre_name_list = os.listdir(datas.credentials_path)
@@ -372,6 +375,7 @@ def check_active_server():
                             f.write(r.text)
                             f.close()
 
+
                 stnd_cre_name_list = os.listdir(datas.credentials_path)
                 for act in act_cre_name_list:
                     print('act_credentials : ' + act)
@@ -391,7 +395,6 @@ def check_active_server():
                     f.close()
                     git_manager.add()
                     print('git push')
-                    git_manager.recover_pull()
                     break;
                 wait_count += 1
                 print(str(wait_count))
