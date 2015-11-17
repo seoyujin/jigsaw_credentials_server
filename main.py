@@ -13,6 +13,7 @@ import util
 import recover
 import git_manager
 import time
+from datetime import date
 
 SCOPES              = ['https://www.googleapis.com/auth/drive',
                        'https://www.googleapis.com/auth/drive.file',
@@ -44,14 +45,15 @@ def donations():
 
             flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE,
                                        scope=SCOPES,
-                                       redirect_uri='%s/redirect_url'% SERVER_URL.strip())
+                                       redirect_uri='%s/redirect_url'% SERVER_URL)
             flow.params['access_type'] = 'offline'
             flow.params['approval_prompt'] = 'force'
             flow.params['state'] = id
 
             auth_uri = flow.step1_get_authorize_url()
             return redirect(auth_uri)
-        except:
+        except Exception as e:
+            print(e)
             failed_donation = True
             del datas.credential_dic[id]
 
@@ -321,6 +323,43 @@ def read_log():
     except:
         return 'out of range index'
 
+@app.route('/garbage_log', methods = ['POST'])
+def write_garbage_log():
+    log_msg = request.form['log']
+    today = str(date.today())
+    msg = log_msg.split(' ')[1]
+
+    if msg == 'complete':
+        file_name = log_msg.split(' ')[0] 
+        garbage_list = []
+        with open('./garbage.txt') as f:
+            for line in f:
+                garbage_list.append(line)
+
+        write_list = []        
+        for gb in garbage_list:
+            gb_info = gb.split(' ')
+
+            if gb_info[0] != today:
+                write_list.append(gb)
+                continue
+
+            f_name = gb_info[2].split('_')[3]
+            if file_name != f_name:
+                write_list.append(gb)
+            
+        f = open('./garbage.txt', 'w')
+        for wr in write_list:
+            f.write(wr)
+        f.close()
+    else:
+        f = open('./garbage.txt', 'a')
+        f.write(today + ' ' + log_msg+ '\n')
+        f.close()
+
+    return log_msg
+
+
 @app.route('/alive', methods = ['GET'])
 def is_alive():
     return 'still alive...'
@@ -341,6 +380,7 @@ def check_active_server():
     ping_url = active_server_url + '/alive'
     print(active_server_url)
 
+    '''
     wait_count = 0
     if active_server_url != SERVER_URL:
         # STAND-BY-SERVER
@@ -399,6 +439,7 @@ def check_active_server():
                 print(str(wait_count))
             
             time.sleep(60)
+    '''
 
 
 if __name__ == '__main__':
@@ -409,7 +450,7 @@ if __name__ == '__main__':
     datas.load_credentials_dic()
     datas.load_credentials_list()
     datas.load_log_list()
-    monitor.start_threading()
+    #monitor.start_threading()
     recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
