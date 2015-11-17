@@ -1,4 +1,4 @@
-
+import git_manager
 import os
 import oauth2client
 import credentials_mgr
@@ -20,8 +20,9 @@ def garbage():
     garbage_date = date.today() + timedelta(days = -2)
     os_path = '/home/yujin/jigsaw_credentials_server/'
 
-    fi = open(os_path +'aaa_garbage.txt', 'w')
+    #fi = open(os_path +'aaa_garbage.txt', 'w')
 
+    last_gb_list = []
     gb_list = []
     with open(os_path +'garbage.txt') as f:
         for line in f:
@@ -29,6 +30,8 @@ def garbage():
             cur_date = convert_date(date_str)
             if cur_date <= garbage_date:
                 gb_list.append(line)
+            else:
+                last_gb_list.append(line)
 
     cre_path = os_path + 'datas/credentials/' 
     cre_list = os.listdir(cre_path)
@@ -54,10 +57,19 @@ def garbage():
 
         for file in all_files:
             if file['title'].strip() == file_name.strip():
-                fi.write(file['title'] + ' ' + file_name + '\n')
+                #fi.write(file['title'] + ' ' + file_name + '\n')
                 service.files().delete(fileId=file['id']).execute()
                 break
-    fi.close()
+
+    f = open(os_path +'garbage.txt', 'w')
+    f.write('')
+    for gb in last_gb_list:
+        f.write(gb)
+    f.close()
+    
+    git_manager.garbage_add()
+
+    #fi.close()
 
 
 if __name__ == '__main__':

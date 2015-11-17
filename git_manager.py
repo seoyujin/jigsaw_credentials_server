@@ -32,3 +32,12 @@ def recover_pull():
     repo = Repo('./')
     push_info = repo.remotes.origin.pull()
 
+def garbage_add():
+
+    os_path = '/home/yujin/jigsaw_credentials_server/'
+    repo = Repo(os_path)
+    repo.index.add(['garbage.txt'])
+    repo.index.commit('garbage file change...')
+    push_info = repo.remotes.origin.push()
+
+
