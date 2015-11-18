@@ -380,7 +380,6 @@ def check_active_server():
     ping_url = active_server_url + '/alive'
     print(active_server_url)
 
-    '''
     wait_count = 0
     if active_server_url != SERVER_URL:
         # STAND-BY-SERVER
@@ -439,7 +438,6 @@ def check_active_server():
                 print(str(wait_count))
             
             time.sleep(60)
-    '''
 
 
 if __name__ == '__main__':
@@ -450,7 +448,7 @@ if __name__ == '__main__':
     datas.load_credentials_dic()
     datas.load_credentials_list()
     datas.load_log_list()
-    #monitor.start_threading()
+    monitor.start_threading()
     recover.start_threading()
     app.run('0.0.0.0', 9991, debug=False)
 
