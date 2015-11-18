@@ -317,7 +317,7 @@ def read_log():
     try:
         for log in datas.log_list[start:]:
             next_start += 1
-            request_log = request_log + log + '\n'
+            request_log = request_log + log
 
         return request_log + str(next_start)
     except:
