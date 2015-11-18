@@ -297,7 +297,7 @@ def write_log():
     log_msg = request.form['log']
 
     f = open('log.txt', 'a')
-    f.write(log_msg + '\n')
+    f.write(log_msg + '\r')
     f.close()
 
     datas.log_list.append(log_msg)
