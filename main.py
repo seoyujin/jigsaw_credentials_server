@@ -321,7 +321,7 @@ def read_log():
 
         return request_log + str(next_start)
     except:
-        return 'out of range index'
+        return ''
 
 @app.route('/garbage_log', methods = ['POST'])
 def write_garbage_log():
