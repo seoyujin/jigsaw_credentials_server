@@ -297,7 +297,7 @@ def write_log():
     log_msg = request.form['log']
 
     f = open('log.txt', 'a')
-    f.write(log_msg + '\r')
+    f.write(log_msg + '\n')
     f.close()
 
     datas.log_list.append(log_msg)
@@ -317,7 +317,7 @@ def read_log():
     try:
         for log in datas.log_list[start:]:
             next_start += 1
-            request_log = request_log + log
+            request_log = request_log + log + '\n'
 
         return request_log + str(next_start)
     except:
