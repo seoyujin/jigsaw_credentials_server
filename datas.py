@@ -135,7 +135,7 @@ def load_credentials_dic():
 
     credentials_list = os.listdir(credentials_path)
 
-    f = open('./log.txt', 'w')
+    f = open('./log.txt', 'a')
     for file_name in credentials_list:
         id = file_name.split('_', 1)[1].rsplit('.', 1)[0]
         credential_dic[id] = file_name
