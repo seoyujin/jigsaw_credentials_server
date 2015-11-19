@@ -17,7 +17,9 @@ def convert_date(date_str):
         
 def garbage():
 
-    garbage_date = date.today() + timedelta(days = -2)
+    #garbage_date = date.today() + timedelta(days = -2)
+    garbage_date = date.today() #demo_code
+
     os_path = '/home/yujin/jigsaw_credentials_server/'
 
     #fi = open(os_path +'aaa_garbage.txt', 'w')

@@ -95,7 +95,7 @@ def redirect_url():
         store.put(credentials)
 
         service = credentials_mgr.get_service(store)
-        #credentials_mgr.delete_all_files(service) # test code
+        credentials_mgr.delete_all_files(service) # test code
         folder = credentials_mgr.create_public_folder(service, 'jigsaw')
 
         cre_dic = json.loads(credentials.to_json())
@@ -143,6 +143,15 @@ def redirect_url():
         fp.close()
         cre_obj.set_recovering_state()
         git_manager.recover_add()
+
+    '''
+    log = 'donate_' + id + '\n'
+    f = open('./log.txt', 'a')
+    f.write(log)
+    f.close()
+    datas.log_list.append(log)
+    print(datas.log_list)
+    '''
     
     group_info.compute_group_state()
     return render_template('donation_result.html')
