@@ -6,3 +6,4 @@ recover_files
 client_secret.json
 server_url.txt
 log.txt
+.python-version
